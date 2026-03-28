@@ -133,15 +133,19 @@ function reducer(state: SimulatorState, action: Action): SimulatorState {
 
     case 'SET_SIMULATION':
       return { ...state, simulation: action.simulation };
-    case 'SET_SIMULATION_ENTRY':
+    case 'SET_SIMULATION_ENTRY': {
+      const exists = state.simulation.some((s) => s.offerId === action.offerId);
       return {
         ...state,
-        simulation: state.simulation.map((s) =>
-          s.offerId === action.offerId
-            ? { ...s, studentCount: action.studentCount }
-            : s
-        ),
+        simulation: exists
+          ? state.simulation.map((s) =>
+              s.offerId === action.offerId
+                ? { ...s, studentCount: action.studentCount }
+                : s
+            )
+          : [...state.simulation, { offerId: action.offerId, studentCount: action.studentCount }],
       };
+    }
 
     default:
       return state;
