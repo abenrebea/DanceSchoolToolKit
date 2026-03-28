@@ -1,6 +1,7 @@
-import { BarChart3, RotateCcw, TrendingUp, TrendingDown, Users } from 'lucide-react';
+import { BarChart3, RotateCcw, TrendingUp, TrendingDown, Users, Download } from 'lucide-react';
 import { useSimulator } from '../hooks/useSimulator';
 import { calculateOfferRevenue } from '../utils/calculations';
+import { exportSimulationPDF } from '../utils/exportPdf';
 
 const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
@@ -42,6 +43,8 @@ export default function Simulation() {
   const {
     state,
     dispatch,
+    seasonWeeks,
+    weeklyHours,
     annualCost,
     totalRevenue,
     profitLoss,
@@ -59,6 +62,20 @@ export default function Simulation() {
 
   const resetToEquilibrium = () => {
     dispatch({ type: 'SET_SIMULATION', simulation: equilibrium });
+  };
+
+  const handleExportPDF = () => {
+    exportSimulationPDF({
+      state,
+      seasonWeeks,
+      weeklyHours,
+      annualCost,
+      totalRevenue,
+      profitLoss,
+      isProfitable,
+      offersWithPricePerClass,
+      classOccupancy,
+    });
   };
 
   const getStudentCount = (offerId: string) => {
@@ -100,13 +117,22 @@ export default function Simulation() {
           <BarChart3 className="w-5 h-5 text-brand-600" />
           Simulation
         </h2>
-        <button
-          onClick={resetToEquilibrium}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          <RotateCcw className="w-4 h-4" />
-          Réinitialiser à l'équilibre
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={resetToEquilibrium}
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Réinitialiser
+          </button>
+          <button
+            onClick={handleExportPDF}
+            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Exporter PDF
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
