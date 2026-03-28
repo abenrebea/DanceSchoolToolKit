@@ -32,11 +32,12 @@ export function useSimulator() {
     () =>
       calculateAnnualCost(
         state.charges.rentPerHour,
+        state.charges.instructorHourlyRate,
         weeklyHours,
         seasonWeeks,
         state.charges.fixedCharges
       ),
-    [state.charges.rentPerHour, weeklyHours, seasonWeeks, state.charges.fixedCharges]
+    [state.charges.rentPerHour, state.charges.instructorHourlyRate, weeklyHours, seasonWeeks, state.charges.fixedCharges]
   );
 
   const offersWithPricePerClass = useMemo(

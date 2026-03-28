@@ -52,13 +52,15 @@ export function calculateWeeklyHours(classes: ClassSlot[]): number {
 
 export function calculateAnnualCost(
   rentPerHour: number,
+  instructorHourlyRate: number,
   weeklyHours: number,
   seasonWeeks: number,
   fixedCharges: FixedCharge[]
 ): number {
   const rentCost = rentPerHour * weeklyHours * seasonWeeks;
+  const instructorCost = instructorHourlyRate * weeklyHours * seasonWeeks;
   const fixedCost = fixedCharges.reduce((sum, c) => sum + c.annualAmount, 0);
-  return rentCost + fixedCost;
+  return rentCost + instructorCost + fixedCost;
 }
 
 export function calculatePricePerClass(

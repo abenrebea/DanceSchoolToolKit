@@ -38,6 +38,7 @@ export interface FixedCharge {
 
 export interface ChargesConfig {
   rentPerHour: number;
+  instructorHourlyRate: number;
   fixedCharges: FixedCharge[];
 }
 

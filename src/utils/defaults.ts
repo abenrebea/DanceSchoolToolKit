@@ -33,6 +33,7 @@ export const defaultState: SimulatorState = {
   ],
   charges: {
     rentPerHour: 45,
+    instructorHourlyRate: 0,
     fixedCharges: [],
   },
   simulation: [],

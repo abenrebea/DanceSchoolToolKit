@@ -6,8 +6,10 @@ export default function Charges() {
   const { state, dispatch } = useSimulatorContext();
   const { weeklyHours, seasonWeeks, annualCost } = useSimulator();
 
-  const weeklyCost = state.charges.rentPerHour * weeklyHours;
-  const annualRent = weeklyCost * seasonWeeks;
+  const weeklyRent = state.charges.rentPerHour * weeklyHours;
+  const annualRent = weeklyRent * seasonWeeks;
+  const weeklyInstructor = state.charges.instructorHourlyRate * weeklyHours;
+  const annualInstructor = weeklyInstructor * seasonWeeks;
   const fixedTotal = state.charges.fixedCharges.reduce(
     (sum, c) => sum + c.annualAmount,
     0
@@ -31,33 +33,56 @@ export default function Charges() {
         Charges
       </h2>
 
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-600 mb-1">
-          Loyer studio par heure
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min={0}
-            step={1}
-            value={state.charges.rentPerHour}
-            onChange={(e) =>
-              dispatch({
-                type: 'SET_RENT',
-                rentPerHour: parseFloat(e.target.value) || 0,
-              })
-            }
-            className="w-32 px-3 py-2 border border-gray-200 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand-300"
-          />
-          <span className="text-sm text-gray-500">EUR / heure</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Loyer studio par heure
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0}
+              step={1}
+              value={state.charges.rentPerHour}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_RENT',
+                  rentPerHour: parseFloat(e.target.value) || 0,
+                })
+              }
+              className="w-32 px-3 py-2 border border-gray-200 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand-300"
+            />
+            <span className="text-sm text-gray-500">EUR / heure</span>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Rémunération Prof par heure
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={0}
+              step={1}
+              value={state.charges.instructorHourlyRate}
+              onChange={(e) =>
+                dispatch({
+                  type: 'SET_INSTRUCTOR_RATE',
+                  instructorHourlyRate: parseFloat(e.target.value) || 0,
+                })
+              }
+              className="w-32 px-3 py-2 border border-gray-200 rounded-md text-sm text-right focus:outline-none focus:ring-2 focus:ring-brand-300"
+            />
+            <span className="text-sm text-gray-500">EUR / heure</span>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 p-4 bg-gray-50 rounded-lg">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-4 bg-gray-50 rounded-lg">
         <div>
-          <div className="text-xs text-gray-500 uppercase tracking-wide">Coût hebdomadaire</div>
+          <div className="text-xs text-gray-500 uppercase tracking-wide">Loyer hebdo</div>
           <div className="text-lg font-semibold text-gray-800">
-            {weeklyCost.toLocaleString('fr-FR')} EUR
+            {weeklyRent.toLocaleString('fr-FR')} EUR
           </div>
           <div className="text-xs text-gray-400">
             {state.charges.rentPerHour} EUR x {weeklyHours}h
@@ -69,7 +94,16 @@ export default function Charges() {
             {annualRent.toLocaleString('fr-FR')} EUR
           </div>
           <div className="text-xs text-gray-400">
-            {weeklyCost} EUR x {seasonWeeks} sem.
+            {weeklyRent} EUR x {seasonWeeks} sem.
+          </div>
+        </div>
+        <div>
+          <div className="text-xs text-gray-500 uppercase tracking-wide">Rémun. annuelle</div>
+          <div className="text-lg font-semibold text-gray-800">
+            {annualInstructor.toLocaleString('fr-FR')} EUR
+          </div>
+          <div className="text-xs text-gray-400">
+            {state.charges.instructorHourlyRate} EUR x {weeklyHours}h x {seasonWeeks} sem.
           </div>
         </div>
         <div>

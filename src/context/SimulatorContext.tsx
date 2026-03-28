@@ -23,6 +23,7 @@ type Action =
   | { type: 'UPDATE_OFFER'; offer: PaymentOffer }
   | { type: 'REMOVE_OFFER'; id: string }
   | { type: 'SET_RENT'; rentPerHour: number }
+  | { type: 'SET_INSTRUCTOR_RATE'; instructorHourlyRate: number }
   | { type: 'ADD_FIXED_CHARGE'; charge: FixedCharge }
   | { type: 'UPDATE_FIXED_CHARGE'; charge: FixedCharge }
   | { type: 'REMOVE_FIXED_CHARGE'; id: string }
@@ -95,6 +96,11 @@ function reducer(state: SimulatorState, action: Action): SimulatorState {
       return {
         ...state,
         charges: { ...state.charges, rentPerHour: action.rentPerHour },
+      };
+    case 'SET_INSTRUCTOR_RATE':
+      return {
+        ...state,
+        charges: { ...state.charges, instructorHourlyRate: action.instructorHourlyRate },
       };
     case 'ADD_FIXED_CHARGE':
       return {
