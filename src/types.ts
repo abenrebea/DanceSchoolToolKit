@@ -46,6 +46,12 @@ export interface SimulationEntry {
   studentCount: number;
 }
 
+export interface ClassOccupancy {
+  classId: string;
+  total: number;
+  byType: Record<OfferType, number>;
+}
+
 export interface SimulatorState {
   currentStep: number;
   classes: ClassSlot[];

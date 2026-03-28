@@ -1,4 +1,4 @@
-import type { ClassSlot, HolidayPeriod, PaymentOffer, FixedCharge, SimulationEntry } from '../types';
+import type { ClassSlot, HolidayPeriod, PaymentOffer, FixedCharge, SimulationEntry, ClassOccupancy } from '../types';
 
 function parseDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -148,4 +148,122 @@ export function calculateEquilibrium(
   }
 
   return entries;
+}
+
+function timeToMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function classesOverlap(a: ClassSlot, b: ClassSlot): boolean {
+  if (a.day !== b.day) return false;
+  const aStart = timeToMinutes(a.time);
+  const aEnd = aStart + a.durationHours * 60;
+  const bStart = timeToMinutes(b.time);
+  const bEnd = bStart + b.durationHours * 60;
+  return aStart < bEnd && bStart < aEnd;
+}
+
+export function buildOverlapGroups(classes: ClassSlot[]): string[][] {
+  const parent = new Map<string, string>();
+  for (const cls of classes) parent.set(cls.id, cls.id);
+
+  function find(id: string): string {
+    while (parent.get(id) !== id) {
+      parent.set(id, parent.get(parent.get(id)!)!);
+      id = parent.get(id)!;
+    }
+    return id;
+  }
+  function union(a: string, b: string) {
+    parent.set(find(a), find(b));
+  }
+
+  for (let i = 0; i < classes.length; i++) {
+    for (let j = i + 1; j < classes.length; j++) {
+      if (classesOverlap(classes[i], classes[j])) {
+        union(classes[i].id, classes[j].id);
+      }
+    }
+  }
+
+  const groups = new Map<string, string[]>();
+  for (const cls of classes) {
+    const root = find(cls.id);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root)!.push(cls.id);
+  }
+  return [...groups.values()];
+}
+
+export function calculateClassOccupancy(
+  classes: ClassSlot[],
+  offers: PaymentOffer[],
+  simulation: SimulationEntry[],
+  seasonWeeks: number
+): ClassOccupancy[] {
+  const totalClasses = classes.length;
+  if (totalClasses === 0 || seasonWeeks === 0) return [];
+
+  const overlapGroups = buildOverlapGroups(classes);
+  const overlapGroupSize = new Map<string, number>();
+  for (const group of overlapGroups) {
+    for (const id of group) {
+      overlapGroupSize.set(id, group.length);
+    }
+  }
+
+  const result = new Map<string, Record<string, number>>();
+  for (const cls of classes) {
+    result.set(cls.id, { trial: 0, dropin: 0, package: 0, annual: 0, unlimited: 0 });
+  }
+
+  for (const entry of simulation) {
+    const offer = offers.find((o) => o.id === entry.offerId);
+    if (!offer || entry.studentCount === 0) continue;
+
+    const count = entry.studentCount;
+
+    switch (offer.type) {
+      case 'trial':
+      case 'dropin': {
+        const perClass = count / seasonWeeks / totalClasses;
+        for (const cls of classes) {
+          result.get(cls.id)![offer.type] += perClass;
+        }
+        break;
+      }
+      case 'package': {
+        const perClass = (count * (offer.classCount ?? 0)) / seasonWeeks / totalClasses;
+        for (const cls of classes) {
+          result.get(cls.id)!.package += perClass;
+        }
+        break;
+      }
+      case 'annual': {
+        const perClass = (count * (offer.hoursPerWeek ?? 0)) / totalClasses;
+        for (const cls of classes) {
+          result.get(cls.id)!.annual += perClass;
+        }
+        break;
+      }
+      case 'unlimited': {
+        for (const cls of classes) {
+          const groupSize = overlapGroupSize.get(cls.id) ?? 1;
+          result.get(cls.id)!.unlimited += count / groupSize;
+        }
+        break;
+      }
+    }
+  }
+
+  return classes.map((cls) => {
+    const byType = result.get(cls.id)! as Record<string, number>;
+    const total = Object.values(byType).reduce((s, v) => s + v, 0);
+    return {
+      classId: cls.id,
+      total,
+      byType: byType as ClassOccupancy['byType'],
+    };
+  });
 }

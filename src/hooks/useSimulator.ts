@@ -7,6 +7,7 @@ import {
   calculatePricePerClass,
   calculateTotalRevenue,
   calculateEquilibrium,
+  calculateClassOccupancy,
 } from '../utils/calculations';
 
 export function useSimulator() {
@@ -60,6 +61,12 @@ export function useSimulator() {
     [annualCost, state.offers]
   );
 
+  const classOccupancy = useMemo(
+    () =>
+      calculateClassOccupancy(state.classes, state.offers, state.simulation, seasonWeeks),
+    [state.classes, state.offers, state.simulation, seasonWeeks]
+  );
+
   return {
     seasonWeeks,
     weeklyHours,
@@ -69,6 +76,7 @@ export function useSimulator() {
     profitLoss,
     isProfitable,
     equilibrium,
+    classOccupancy,
     state,
     dispatch,
   };

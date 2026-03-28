@@ -1,6 +1,15 @@
-import { BarChart3, RotateCcw, TrendingUp, TrendingDown } from 'lucide-react';
+import { BarChart3, RotateCcw, TrendingUp, TrendingDown, Users } from 'lucide-react';
 import { useSimulator } from '../hooks/useSimulator';
 import { calculateOfferRevenue } from '../utils/calculations';
+
+const DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+
+function getOccupancyColor(total: number): string {
+  if (total < 5) return 'bg-green-50';
+  if (total < 10) return 'bg-yellow-50';
+  if (total < 15) return 'bg-orange-50';
+  return 'bg-red-50';
+}
 
 const TYPE_COLORS: Record<string, string> = {
   trial: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -39,6 +48,7 @@ export default function Simulation() {
     isProfitable,
     equilibrium,
     offersWithPricePerClass,
+    classOccupancy,
   } = useSimulator();
 
   const hasSimulation = state.simulation.length > 0;
@@ -321,6 +331,70 @@ export default function Simulation() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Occupancy per class */}
+      <div className="mt-8">
+        <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center gap-2 mb-3">
+          <Users className="w-4 h-4 text-brand-600" />
+          Occupation par cours (moyenne hebdomadaire)
+        </h3>
+        <div className="overflow-x-auto rounded-xl border border-gray-200">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Cours</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Jour</th>
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Horaire</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-yellow-600">Essais</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-blue-600">Unités</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-purple-600">Forfaits</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-green-600">Annuels</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-orange-600">Illimité</th>
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-700">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...state.classes]
+                .sort((a, b) => a.day - b.day || a.time.localeCompare(b.time))
+                .map((cls) => {
+                  const occ = classOccupancy.find((o) => o.classId === cls.id);
+                  const total = occ?.total ?? 0;
+                  return (
+                    <tr key={cls.id} className={`border-b border-gray-100 ${getOccupancyColor(total)}`}>
+                      <td className="px-3 py-2 font-medium text-gray-800">
+                        {cls.name || 'Sans nom'}
+                      </td>
+                      <td className="px-3 py-2 text-gray-600">{DAYS[cls.day]}</td>
+                      <td className="px-3 py-2 text-gray-600">{cls.time}</td>
+                      <td className="px-3 py-2 text-right text-yellow-700">
+                        {(occ?.byType.trial ?? 0).toFixed(1)}
+                      </td>
+                      <td className="px-3 py-2 text-right text-blue-700">
+                        {(occ?.byType.dropin ?? 0).toFixed(1)}
+                      </td>
+                      <td className="px-3 py-2 text-right text-purple-700">
+                        {(occ?.byType.package ?? 0).toFixed(1)}
+                      </td>
+                      <td className="px-3 py-2 text-right text-green-700">
+                        {(occ?.byType.annual ?? 0).toFixed(1)}
+                      </td>
+                      <td className="px-3 py-2 text-right text-orange-700">
+                        {(occ?.byType.unlimited ?? 0).toFixed(1)}
+                      </td>
+                      <td className="px-3 py-2 text-right font-bold text-gray-900">
+                        {total.toFixed(1)}
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">
+          Répartition estimée en supposant une distribution uniforme des élèves sur tous les cours.
+          Les abonnés illimité sont présents à tous les cours non superposés.
+        </p>
       </div>
     </div>
   );
