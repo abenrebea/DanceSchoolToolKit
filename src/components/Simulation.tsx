@@ -208,6 +208,14 @@ export default function Simulation() {
               <div className="space-y-3">
                 <div>
                   <div className="text-xs text-gray-500 uppercase tracking-wide">
+                    Total élèves / ventes
+                  </div>
+                  <div className="text-2xl font-bold text-brand-700">
+                    {state.simulation.reduce((sum, s) => sum + s.studentCount, 0)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide">
                     Revenus annuels
                   </div>
                   <div className="text-2xl font-bold text-green-700">
