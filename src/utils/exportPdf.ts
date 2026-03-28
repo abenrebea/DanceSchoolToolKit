@@ -36,7 +36,8 @@ export function exportSimulationPDF(data: ExportData) {
   } = data;
 
   const doc = new jsPDF();
-  const fmt = (n: number) => n.toLocaleString('fr-FR');
+  const fmt = (n: number) =>
+    n.toLocaleString('fr-FR').replace(/\u202F|\u00A0/g, ' ');
   let y: number;
 
   // Title
@@ -72,10 +73,13 @@ export function exportSimulationPDF(data: ExportData) {
       ['Résultat net', `${profitLoss >= 0 ? '+' : ''}${fmt(profitLoss)} EUR`],
       ['Statut', isProfitable ? 'Rentable' : 'Déficitaire'],
     ],
-    headStyles: { fillColor: BRAND, fontSize: 9 },
+    headStyles: { fillColor: BRAND, fontSize: 9, halign: 'left' },
     bodyStyles: { fontSize: 9 },
     alternateRowStyles: { fillColor: LIGHT_GRAY },
-    columnStyles: { 1: { halign: 'right' } },
+    columnStyles: {
+      0: { cellWidth: 80 },
+      1: { halign: 'right' },
+    },
     didParseCell(hookData) {
       if (hookData.section === 'body' && hookData.row.index === 3) {
         hookData.cell.styles.textColor = isProfitable ? GREEN : RED;
@@ -117,13 +121,14 @@ export function exportSimulationPDF(data: ExportData) {
     startY: y + 4,
     head: [['Offre', 'Prix unitaire', 'Quantité', 'Revenu']],
     body: revenueRows,
-    headStyles: { fillColor: BRAND, fontSize: 9 },
+    headStyles: { fillColor: BRAND, fontSize: 9, halign: 'left' },
     bodyStyles: { fontSize: 9 },
     alternateRowStyles: { fillColor: LIGHT_GRAY },
     columnStyles: {
-      1: { halign: 'right' },
-      2: { halign: 'right' },
-      3: { halign: 'right' },
+      0: { cellWidth: 60 },
+      1: { halign: 'right', cellWidth: 40 },
+      2: { halign: 'right', cellWidth: 30 },
+      3: { halign: 'right', cellWidth: 'auto' },
     },
     didParseCell(hookData) {
       const totalRowStart = offersWithPricePerClass.length;
@@ -175,10 +180,13 @@ export function exportSimulationPDF(data: ExportData) {
     startY: y + 4,
     head: [['Charge', 'Calcul', 'Montant']],
     body: chargesBody,
-    headStyles: { fillColor: BRAND, fontSize: 9 },
+    headStyles: { fillColor: BRAND, fontSize: 9, halign: 'left' },
     bodyStyles: { fontSize: 9 },
     alternateRowStyles: { fillColor: LIGHT_GRAY },
-    columnStyles: { 2: { halign: 'right' } },
+    columnStyles: {
+      0: { cellWidth: 50 },
+      2: { halign: 'right', cellWidth: 45 },
+    },
     didParseCell(hookData) {
       const lastRow = chargesBody.length - 1;
       if (hookData.section === 'body' && hookData.row.index === lastRow) {
@@ -223,16 +231,16 @@ export function exportSimulationPDF(data: ExportData) {
     startY: y + 4,
     head: [['Cours', 'Jour', 'Heure', 'Essais', 'Unités', 'Forfaits', 'Annuels', 'Illimité', 'Total']],
     body: occupancyRows,
-    headStyles: { fillColor: BRAND, fontSize: 8 },
+    headStyles: { fillColor: BRAND, fontSize: 8, halign: 'left' },
     bodyStyles: { fontSize: 8 },
     alternateRowStyles: { fillColor: LIGHT_GRAY },
     columnStyles: {
-      3: { halign: 'right' },
-      4: { halign: 'right' },
-      5: { halign: 'right' },
-      6: { halign: 'right' },
-      7: { halign: 'right' },
-      8: { halign: 'right', fontStyle: 'bold' },
+      3: { halign: 'right', cellWidth: 16 },
+      4: { halign: 'right', cellWidth: 16 },
+      5: { halign: 'right', cellWidth: 18 },
+      6: { halign: 'right', cellWidth: 18 },
+      7: { halign: 'right', cellWidth: 18 },
+      8: { halign: 'right', cellWidth: 16, fontStyle: 'bold' },
     },
   });
 
