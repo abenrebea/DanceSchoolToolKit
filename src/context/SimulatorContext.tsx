@@ -1,6 +1,6 @@
-import { createContext, useContext, useReducer, type ReactNode, type Dispatch } from 'react';
+import { createContext, useContext, useReducer, useEffect, type ReactNode, type Dispatch } from 'react';
+import type { SimulatorState } from '../types';
 import type {
-  SimulatorState,
   ClassSlot,
   SeasonConfig,
   HolidayPeriod,
@@ -153,10 +153,42 @@ interface SimulatorContextType {
   dispatch: Dispatch<Action>;
 }
 
+const STORAGE_KEY = 'dance-school-toolkit-state';
+
+function loadState(): SimulatorState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState;
+    const parsed = JSON.parse(raw) as SimulatorState;
+    // Merge with defaults to handle new fields added in future versions
+    return {
+      ...defaultState,
+      ...parsed,
+      charges: { ...defaultState.charges, ...parsed.charges },
+      season: { ...defaultState.season, ...parsed.season },
+    };
+  } catch {
+    return defaultState;
+  }
+}
+
+function saveState(state: SimulatorState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // Silently ignore storage errors (quota exceeded, etc.)
+  }
+}
+
 const SimulatorContext = createContext<SimulatorContextType | null>(null);
 
 export function SimulatorProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, defaultState);
+  const [state, dispatch] = useReducer(reducer, null, loadState);
+
+  useEffect(() => {
+    saveState(state);
+  }, [state]);
+
   return (
     <SimulatorContext.Provider value={{ state, dispatch }}>
       {children}
